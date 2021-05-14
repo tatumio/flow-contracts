@@ -1,0 +1,27 @@
+{
+  "name": "@tatumio/flow-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tatumio/flow-contracts.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tatumio/flow-contracts/issues"
+  },
+  "homepage": "https://github.com/tatumio/flow-contracts#readme",
+  "dependencies": {
+    "@babel/core": "^7.14.2",
+    "@babel/preset-env": "^7.14.2",
+    "@onflow/types": "0.0.4",
+    "babel-jest": "^26.6.3",
+    "flow-js-testing": "^0.1.8-beta.0",
+    "jest": "^26.6.3"
+  }
+}
