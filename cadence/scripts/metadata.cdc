@@ -1,4 +1,4 @@
-import TatumMultiNFT from 0x02
+import TatumMultiNFT from 0x4f09d8d43e4967b7
 
 pub fun main(account: Address, id: UInt64, type: String): String {
     let collectionRef = getAccount(account)

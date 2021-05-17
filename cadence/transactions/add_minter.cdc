@@ -1,4 +1,4 @@
-import TatumMultiNFT from 0x02
+import TatumMultiNFT from 0x4f09d8d43e4967b7
 
 transaction(type: String) {
 

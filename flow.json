@@ -5,17 +5,51 @@
 			"serviceAccount": "emulator-account"
 		}
 	},
-	"contracts": {},
+	"contracts": {
+		"TatumMultiNFT": "./cadence/contracts/TatumMultiNFT.cdc"
+	},
 	"networks": {
 		"emulator": "127.0.0.1:3569",
 		"mainnet": "access.mainnet.nodes.onflow.org:9000",
 		"testnet": "access.devnet.nodes.onflow.org:9000"
 	},
 	"accounts": {
+		"deployer": {
+			"address": "4f09d8d43e4967b7",
+			"keys": [
+				{
+					"type": "hex",
+					"index": 0,
+					"signatureAlgorithm": "ECDSA_secp256k1",
+					"hashAlgorithm": "SHA3_256",
+					"context": {
+						"privateKey": "44179e42e147b391d3deb8a7a160b9490941cd7292936e6cc7277166a99ef058"
+					}
+				}
+			]
+		},
+		"minter": {
+			"address": "c4b2a5119c7c6cd6",
+			"keys": [
+				{
+					"type": "hex",
+					"index": 0,
+					"signatureAlgorithm": "ECDSA_secp256k1",
+					"hashAlgorithm": "SHA3_256",
+					"context": {
+						"privateKey": "358d3d89f9725ad8e0d047a71b96991becdcbd84a49964c0e96d22895b77b536"
+					}
+				}
+			]
+		},
 		"emulator-account": {
 			"address": "f8d6e0586b0a20c7",
 			"keys": "70a3d1c4cf25648f9a7f6ce72753493e17cbbee990a6cc20fd6842aa12bdf881"
 		}
 	},
-	"deployments": {}
+	"deployments": {
+		"testnet": {
+			"deployer": ["TatumMultiNFT"]
+		}
+	}
 }

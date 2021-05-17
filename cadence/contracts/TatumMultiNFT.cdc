@@ -145,9 +145,9 @@ pub contract TatumMultiNFT {
 
     init() {
         self.totalSupplies = {}
-        self.CollectionStoragePath = /storage/TatumNFTCollection
-        self.CollectionPublicPath = /public/TatumNFTCollection
-        self.MinterStoragePath = /storage/TatumNFTMinter
+        self.CollectionStoragePath = /storage/TatumMultiNFTCollection
+        self.CollectionPublicPath = /public/TatumMultiNFTCollection
+        self.MinterStoragePath = /storage/TatumMultiNFTMinter
 
         // Create a Collection resource and save it to storage
         let collection <- create Collection()
