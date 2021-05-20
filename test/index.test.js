@@ -139,7 +139,7 @@ describe("Transactions", () => {
                 console.log(e);
             }
 
-            expect(txResult.errorMessage).toBe("");
+            expect(txResult.status).toBe(4);
         }
     });
 
@@ -180,9 +180,10 @@ describe("Transactions", () => {
             });
         } catch (e) {
             console.log(e);
+            fail(e);
         }
 
-        expect(txResult.errorMessage).toBe("");
+        expect(txResult.status).toBe(4);
     });
     test("test transaction add minter role to Charlie for token type TOKEN_2", async () => {
         const name = "add_minter";
@@ -219,9 +220,10 @@ describe("Transactions", () => {
             });
         } catch (e) {
             console.log(e);
+            fail(e);
         }
 
-        expect(txResult.errorMessage).toBe("");
+        expect(txResult.status).toBe(4);
     });
     test("test FAIL transaction add minter role to Bob from not allowed admin for token type TOKEN_1", async () => {
         const name = "add_minter";
@@ -338,9 +340,16 @@ describe("Transactions", () => {
             });
         } catch (e) {
             console.log(e);
+            fail(e);
         }
-
-        expect(txResult.errorMessage).toBe("");
+        expect(txResult.status).toBe(4);
+        expect(txResult.events.length).toBe(1);
+        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Deposit`);
+        expect(txResult.events[0]?.data).toStrictEqual({
+            id: 0,
+            type: 'TOKEN_1',
+            to: Dave
+        });
         expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect("random url").toBe(await getMetadata('TOKEN_1', 0, Dave));
     });
@@ -381,9 +390,17 @@ describe("Transactions", () => {
             });
         } catch (e) {
             console.log(e);
+            fail(e);
         }
 
-        expect(txResult.errorMessage).toBe("");
+        expect(txResult.status).toBe(4);
+        expect(txResult.events.length).toBe(1);
+        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Deposit`);
+        expect(txResult.events[0]?.data).toStrictEqual({
+            id: 0,
+            type: 'TOKEN_2',
+            to: Alice
+        });
         expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
         expect("random url").toBe(await getMetadata('TOKEN_2', 0, Alice));
     });
@@ -517,9 +534,23 @@ describe("Transactions", () => {
             });
         } catch (e) {
             console.log(e);
+            fail(e);
         }
 
-        expect(txResult.errorMessage).toBe("");
+        expect(txResult.status).toBe(4);
+        expect(txResult.events.length).toBe(2);
+        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Withdraw`);
+        expect(txResult.events[0]?.data).toStrictEqual({
+            id: 0,
+            type: 'TOKEN_1',
+            from: Dave
+        });
+        expect(txResult.events[1]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Deposit`);
+        expect(txResult.events[1]?.data).toStrictEqual({
+            id: 0,
+            type: 'TOKEN_1',
+            to: Bob
+        });
         expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
@@ -575,9 +606,23 @@ describe("Transactions", () => {
             });
         } catch (e) {
             console.log(e);
+            fail(e);
         }
 
-        expect(txResult.errorMessage).toBe("");
+        expect(txResult.status).toBe(4);
+        expect(txResult.events.length).toBe(2);
+        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Withdraw`);
+        expect(txResult.events[0]?.data).toStrictEqual({
+            id: 0,
+            type: 'TOKEN_2',
+            from: Alice
+        });
+        expect(txResult.events[1]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Deposit`);
+        expect(txResult.events[1]?.data).toStrictEqual({
+            id: 0,
+            type: 'TOKEN_2',
+            to: Bob
+        });
         expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
@@ -749,9 +794,17 @@ describe("Transactions", () => {
             });
         } catch (e) {
             console.log(e);
+            fail(e);
         }
 
-        expect(txResult.errorMessage).toBe("");
+        expect(txResult.status).toBe(4);
+        expect(txResult.events.length).toBe(1);
+        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Withdraw`);
+        expect(txResult.events[0]?.data).toStrictEqual({
+            id: 0,
+            type: 'TOKEN_1',
+            from: Bob
+        });
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
@@ -806,9 +859,17 @@ describe("Transactions", () => {
             });
         } catch (e) {
             console.log(e);
+            fail(e);
         }
 
-        expect(txResult.errorMessage).toBe("");
+        expect(txResult.status).toBe(4);
+        expect(txResult.events.length).toBe(1);
+        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Withdraw`);
+        expect(txResult.events[0]?.data).toStrictEqual({
+            id: 0,
+            type: 'TOKEN_2',
+            from: Bob
+        });
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
