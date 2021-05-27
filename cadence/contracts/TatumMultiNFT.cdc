@@ -1,6 +1,7 @@
 pub contract TatumMultiNFT {
 
     pub var totalSupplies: {String: UInt64}
+    pub var minters: {Address: Int}
 
     pub event ContractInitialized()
     pub event Withdraw(id: UInt64, type: String, from: Address?)
@@ -138,16 +139,20 @@ pub contract TatumMultiNFT {
         }
 
         pub fun addMinter(minterAccount: AuthAccount, type: String) {
+            if TatumMultiNFT.minters[minterAccount.address] == 1 {
+                panic("Unable to add minter, already present as a minter for another token type.")
+            }
             let minter <- create NFTMinter(type: type)
             minterAccount.save(<-minter, to: TatumMultiNFT.MinterStoragePath)
+            TatumMultiNFT.minters[minterAccount.address] = 1;
         }
     }
 
     init() {
         self.totalSupplies = {}
-        self.CollectionStoragePath = /storage/TatumMultiNFTCollection
-        self.CollectionPublicPath = /public/TatumMultiNFTCollection
-        self.MinterStoragePath = /storage/TatumMultiNFTMinter
+        self.CollectionStoragePath = /storage/TatumNFTCollection
+        self.CollectionPublicPath = /public/TatumNFTCollection
+        self.MinterStoragePath = /storage/TatumNFTMinter
 
         // Create a Collection resource and save it to storage
         let collection <- create Collection()
@@ -162,6 +167,7 @@ pub contract TatumMultiNFT {
         // Create a Minter resource and save it to storage
         let minter <- create NFTMinter(type: "DEFAULT_ADMIN_MINTER")
         self.account.save(<-minter, to: self.MinterStoragePath)
+        self.minters = {self.account.address: 1}
 
         emit ContractInitialized()
     }

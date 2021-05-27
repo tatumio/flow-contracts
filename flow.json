@@ -49,7 +49,7 @@
 	},
 	"deployments": {
 		"testnet": {
-			"deployer": ["TatumMultiNFT"]
+			"minter": ["TatumMultiNFT"]
 		}
 	}
 }
