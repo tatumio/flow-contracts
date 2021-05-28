@@ -1,11 +1,11 @@
 pub contract TatumMultiNFT {
 
-    pub var totalSupplies: {String: UInt64}
-    pub var minters: {Address: Int}
-
     pub event ContractInitialized()
     pub event Withdraw(id: UInt64, type: String, from: Address?)
     pub event Deposit(id: UInt64, type: String, to: Address?)
+
+    access(self) var totalSupplies: {String: UInt64}
+    access(self) var minters: {Address: Int}
 
     pub let CollectionStoragePath: StoragePath
     pub let CollectionPublicPath: PublicPath
@@ -28,7 +28,6 @@ pub contract TatumMultiNFT {
         pub fun deposit(token: @NFT)
         pub fun getIDs(type: String): [UInt64]
         pub fun borrowNFT(id: UInt64, type: String): &NFT
-        pub fun getMetadata(id: UInt64, type: String): String
         pub fun withdraw(withdrawID: UInt64, type: String): @NFT
     }
 
@@ -82,17 +81,6 @@ pub contract TatumMultiNFT {
             }
         }
 
-        // get metadata URL for the tokenID of given type
-        pub fun getMetadata(id: UInt64, type: String): String {
-            let x = self.types[type] ?? panic("No such token type")
-            let ref = &self.ownedNFTs[x][id] as &NFT
-            if ref != nil {
-              return ref.metadata
-            } else {
-              return panic("No such token");
-            }
-        }
-
         // borrowNFT gets a reference to an NFT in the collection
         // so that the caller can read its metadata and call its methods
         pub fun borrowNFT(id: UInt64, type: String): &NFT {
@@ -129,13 +117,14 @@ pub contract TatumMultiNFT {
                 panic("Unable to mint token for type, where this account is not a minter")
             }
 
+            let initId = TatumMultiNFT.totalSupplies[type] ?? 0 as UInt64;
             // create a new NFT
-            var newNFT <- create NFT(initID: TatumMultiNFT.totalSupplies[type] ?? 0 as UInt64, url: url, type: type)
+            var newNFT <- create NFT(initID: initId, url: url, type: type)
 
             // deposit it in the recipient's account using their reference
             recipient.deposit(token: <-newNFT)
 
-            TatumMultiNFT.totalSupplies[type] = (TatumMultiNFT.totalSupplies[type] ?? 0 as UInt64) + 1 as UInt64
+            TatumMultiNFT.totalSupplies[type] = initId + 1 as UInt64
         }
 
         pub fun addMinter(minterAccount: AuthAccount, type: String) {
