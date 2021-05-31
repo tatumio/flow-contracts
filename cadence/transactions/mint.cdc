@@ -14,15 +14,15 @@ transaction(recipient: Address, url: String, type: String) {
 
     execute {
         // get the public account object for the recipient
-        let recipient = getAccount(recipient)
+        let recipientAccount = getAccount(recipient)
 
         // borrow the recipient's public NFT collection reference
-        let receiver = recipient
+        let receiver = recipientAccount
             .getCapability(TatumMultiNFT.CollectionPublicPath)
             .borrow<&{TatumMultiNFT.TatumMultiNftCollectionPublic}>()
             ?? panic("Could not get receiver reference to the NFT Collection")
 
         // mint the NFT and deposit it to the recipient's collection
-        self.minter.mintNFT(recipient: receiver, type: type, url: url)
+        self.minter.mintNFT(recipient: receiver, type: type, url: url, address: recipient)
     }
 }

@@ -28,8 +28,8 @@
 				}
 			]
 		},
-		"minter": {
-			"address": "c4b2a5119c7c6cd6",
+		"minter2": {
+			"address": "790d994fca93ecb7",
 			"keys": [
 				{
 					"type": "hex",
@@ -49,7 +49,7 @@
 	},
 	"deployments": {
 		"testnet": {
-			"minter": ["TatumMultiNFT"]
+			"minter2": ["TatumMultiNFT"]
 		}
 	}
 }

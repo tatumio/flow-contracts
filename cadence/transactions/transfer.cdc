@@ -1,6 +1,6 @@
 import TatumMultiNFT from 0x4f09d8d43e4967b7
 
-transaction(recipient: Address, withdrawID: UInt64, type: String) {
+transaction(recipient: Address, withdrawID: UInt64) {
 
     // local variable for storing the minter reference
     let senderCollection: &{TatumMultiNFT.TatumMultiNftCollectionPublic}
@@ -21,7 +21,7 @@ transaction(recipient: Address, withdrawID: UInt64, type: String) {
         let depositRef = recipient.getCapability(TatumMultiNFT.CollectionPublicPath).borrow<&{TatumMultiNFT.TatumMultiNftCollectionPublic}>()!
 
         // withdraw the NFT from the owner's collection
-        let nft <- self.senderCollection.withdraw(withdrawID: withdrawID, type: type)
+        let nft <- self.senderCollection.withdraw(withdrawID: withdrawID)
 
         // Deposit the NFT in the recipient's collection
         depositRef.deposit(token: <-nft)

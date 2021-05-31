@@ -6,5 +6,5 @@ pub fun main(address: Address, type: String): [UInt64] {
         .borrow<&{TatumMultiNFT.TatumMultiNftCollectionPublic}>()
         ?? panic("Could not borrow capability from public collection")
 
-    return collectionRef.getIDs(type: type)
+    return collectionRef.getIDsByType(type: type)
 }

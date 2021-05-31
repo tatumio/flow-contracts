@@ -64,7 +64,8 @@ const getMetadata = async (type, id, address) => {
     });
 }
 
-describe("Replicate Playground Accounts", () => {
+describe("Deployment", () => {
+
     test("Create Accounts", async () => {
         // Playground project support 4 accounts, but nothing stops you from creating more by following the example laid out below
         const Alice = await getAccountAddress("Alice");
@@ -80,18 +81,40 @@ describe("Replicate Playground Accounts", () => {
         console.log("Charlie:", Charlie);
         console.log("Dave:", Dave);
     });
-});
 
-describe("Deployment", () => {
-    test("Deploy  contract", async () => {
-        const name = "TatumMultiNFT";
-        const to = await getAccountAddress("Alice");
+    test("Deploy NonFungibleToken contract", async () => {
+        const name = "NonFungibleToken";
+        const to = await getAccountAddress("Dave");
 
         let result;
         try {
             result = await deployContractByName({
                 name,
                 to,
+            });
+        } catch (e) {
+            console.log(e);
+        }
+
+        expect(result.errorMessage).toBe("");
+    });
+
+    test("Deploy TatumMultiNFT contract", async () => {
+        const name = "TatumMultiNFT";
+        const to = await getAccountAddress("Alice");
+
+        // Generate addressMap from import statements
+        const NonFungibleToken = await getContractAddress("NonFungibleToken");
+
+        const addressMap = {
+            NonFungibleToken,
+        };
+        let result;
+        try {
+            result = await deployContractByName({
+                name,
+                to,
+                addressMap
             });
         } catch (e) {
             console.log(e);
@@ -343,9 +366,9 @@ describe("Transactions", () => {
             fail(e);
         }
         expect(txResult.status).toBe(4);
-        expect(txResult.events.length).toBe(1);
-        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Deposit`);
-        expect(txResult.events[0]?.data).toStrictEqual({
+        let event = txResult.events.find(e => e.type.includes('.Minted'));
+        expect(event).toBeDefined()
+        expect(event?.data).toStrictEqual({
             id: 0,
             type: 'TOKEN_1',
             to: Dave
@@ -394,15 +417,15 @@ describe("Transactions", () => {
         }
 
         expect(txResult.status).toBe(4);
-        expect(txResult.events.length).toBe(1);
-        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Deposit`);
-        expect(txResult.events[0]?.data).toStrictEqual({
-            id: 0,
+        let event = txResult.events.find(e => e.type.includes('.Minted'));
+        expect(event).toBeDefined()
+        expect(event?.data).toStrictEqual({
+            id: 1,
             type: 'TOKEN_2',
             to: Alice
         });
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect("random url").toBe(await getMetadata('TOKEN_2', 0, Alice));
+        expect([1]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
+        expect("random url").toBe(await getMetadata('TOKEN_2', 1, Alice));
     });
     test("test FAIL transaction template mint from minter Charlie to Alice unknown TOKEN_3", async () => {
         const name = "mint";
@@ -502,7 +525,6 @@ describe("Transactions", () => {
         const args = [
             [Bob, types.Address],
             [0, types.UInt64],
-            ['TOKEN_1', types.String]
         ];
 
         // Generate addressMap from import statements
@@ -523,7 +545,7 @@ describe("Transactions", () => {
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
+        expect([1]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
         let txResult;
         try {
@@ -542,13 +564,11 @@ describe("Transactions", () => {
         expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Withdraw`);
         expect(txResult.events[0]?.data).toStrictEqual({
             id: 0,
-            type: 'TOKEN_1',
             from: Dave
         });
         expect(txResult.events[1]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Deposit`);
         expect(txResult.events[1]?.data).toStrictEqual({
             id: 0,
-            type: 'TOKEN_1',
             to: Bob
         });
         expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
@@ -557,137 +577,7 @@ describe("Transactions", () => {
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
-    });
-    test("test transaction template transfer from Alice to Bob TOKEN_2 - ID 0", async () => {
-        const name = "transfer";
-
-        // Import participating accounts
-        const [Bob, Dave, Alice, Charlie] = await Promise.all([getAccountAddress("Bob"), getAccountAddress("Dave"),
-            getAccountAddress("Alice"), getAccountAddress("Charlie")]);
-
-        // Set transaction signers
-        const signers = [Alice];
-
-        // Define arguments
-        const args = [
-            [Bob, types.Address],
-            [0, types.UInt64],
-            ['TOKEN_2', types.String]
-        ];
-
-        // Generate addressMap from import statements
-        const TatumMultiNFT = await getContractAddress("TatumMultiNFT");
-
-        const addressMap = {
-            TatumMultiNFT,
-        };
-
-        let code = await getTransactionCode({
-            name,
-            addressMap,
-        });
-
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
-        let txResult;
-        try {
-            txResult = await sendTransaction({
-                code,
-                args,
-                signers,
-            });
-        } catch (e) {
-            console.log(e);
-            fail(e);
-        }
-
-        expect(txResult.status).toBe(4);
-        expect(txResult.events.length).toBe(2);
-        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Withdraw`);
-        expect(txResult.events[0]?.data).toStrictEqual({
-            id: 0,
-            type: 'TOKEN_2',
-            from: Alice
-        });
-        expect(txResult.events[1]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Deposit`);
-        expect(txResult.events[1]?.data).toStrictEqual({
-            id: 0,
-            type: 'TOKEN_2',
-            to: Bob
-        });
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
-    });
-    test("test FAIL transaction template transfer from Dave to Bob wrong TOKEN_2 - ID 0", async () => {
-        const name = "transfer";
-
-        // Import participating accounts
-        const [Bob, Dave, Alice, Charlie] = await Promise.all([getAccountAddress("Bob"), getAccountAddress("Dave"),
-            getAccountAddress("Alice"), getAccountAddress("Charlie")]);
-
-        // Set transaction signers
-        const signers = [Dave];
-
-        // Define arguments
-        const args = [
-            [Bob, types.Address],
-            [0, types.UInt64],
-            ['TOKEN_2', types.String]
-        ];
-
-        // Generate addressMap from import statements
-        const TatumMultiNFT = await getContractAddress("TatumMultiNFT");
-
-        const addressMap = {
-            TatumMultiNFT,
-        };
-
-        let code = await getTransactionCode({
-            name,
-            addressMap,
-        });
-
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
-
-        try {
-            await sendTransaction({
-                code,
-                args,
-                signers,
-            });
-            fail('should fail - no such NFT');
-        } catch (e) {
-            console.log(e);
-            expect(e).toContain("No such token type");
-        }
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
+        expect([1]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
     });
     test("test FAIL transaction template transfer from Dave to Bob non-existing TOKEN_1 - ID 100", async () => {
@@ -704,7 +594,6 @@ describe("Transactions", () => {
         const args = [
             [Bob, types.Address],
             [100, types.UInt64],
-            ['TOKEN_1', types.String]
         ];
 
         // Generate addressMap from import statements
@@ -723,10 +612,6 @@ describe("Transactions", () => {
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
         try {
             await sendTransaction({
                 code,
@@ -742,10 +627,6 @@ describe("Transactions", () => {
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
     });
 
     // Burn tokens
@@ -781,10 +662,6 @@ describe("Transactions", () => {
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
         let txResult;
         try {
             txResult = await sendTransaction({
@@ -802,82 +679,12 @@ describe("Transactions", () => {
         expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Withdraw`);
         expect(txResult.events[0]?.data).toStrictEqual({
             id: 0,
-            type: 'TOKEN_1',
             from: Bob
         });
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
         expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
-    });
-    test("test transaction template burn from Bob TOKEN_2 - ID 0", async () => {
-        const name = "burn";
-
-        // Import participating accounts
-        const [Bob, Dave, Alice, Charlie] = await Promise.all([getAccountAddress("Bob"), getAccountAddress("Dave"),
-            getAccountAddress("Alice"), getAccountAddress("Charlie")]);
-
-        // Set transaction signers
-        const signers = [Bob];
-
-        // Define arguments
-        const args = [
-            [0, types.UInt64],
-            ['TOKEN_2', types.String]
-        ];
-
-        // Generate addressMap from import statements
-        const TatumMultiNFT = await getContractAddress("TatumMultiNFT");
-
-        const addressMap = {
-            TatumMultiNFT,
-        };
-
-        let code = await getTransactionCode({
-            name,
-            addressMap,
-        });
-
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([0]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
-        let txResult;
-        try {
-            txResult = await sendTransaction({
-                code,
-                args,
-                signers,
-            });
-        } catch (e) {
-            console.log(e);
-            fail(e);
-        }
-
-        expect(txResult.status).toBe(4);
-        expect(txResult.events.length).toBe(1);
-        expect(txResult.events[0]?.type).toBe(`A.${TatumMultiNFT.slice(2)}.TatumMultiNFT.Withdraw`);
-        expect(txResult.events[0]?.data).toStrictEqual({
-            id: 0,
-            type: 'TOKEN_2',
-            from: Bob
-        });
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_1', Charlie));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Bob));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Dave));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Alice));
-        expect([]).toStrictEqual(await getTokensByAddress('TOKEN_2', Charlie));
     });
     test("test FAIL transaction template burn from Dave wrong TOKEN_2 - ID 0", async () => {
         const name = "burn";
@@ -916,45 +723,6 @@ describe("Transactions", () => {
         } catch (e) {
             console.log(e);
             expect(e).toContain("No such token type");
-        }
-    });
-    test("test FAIL transaction template burn from Dave non-existing TOKEN_1 - ID 100", async () => {
-        const name = "burn";
-
-        // Import participating accounts
-        const [Dave] = await Promise.all([getAccountAddress("Dave")]);
-
-        // Set transaction signers
-        const signers = [Dave];
-
-        // Define arguments
-        const args = [
-            [100, types.UInt64],
-            ['TOKEN_1', types.String]
-        ];
-
-        // Generate addressMap from import statements
-        const TatumMultiNFT = await getContractAddress("TatumMultiNFT");
-
-        const addressMap = {
-            TatumMultiNFT,
-        };
-
-        let code = await getTransactionCode({
-            name,
-            addressMap,
-        });
-
-        try {
-            await sendTransaction({
-                code,
-                args,
-                signers,
-            });
-            fail('should fail - no such NFT');
-        } catch (e) {
-            console.log(e);
-            expect(e).toContain("missing NFT");
         }
     });
 });

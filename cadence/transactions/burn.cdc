@@ -11,11 +11,13 @@ transaction(withdrawID: UInt64, type: String) {
         self.senderCollection = signer.borrow<&{TatumMultiNFT.TatumMultiNftCollectionPublic}>(from: TatumMultiNFT.CollectionStoragePath)
             ?? panic("Could not borrow a reference to the owner's collection")
 
+        // check if token has correct type
+        self.senderCollection.borrowTatumNFT(id: withdrawID, type: type)
     }
 
     execute {
         // withdraw the NFT from the owner's collection
-        let nft <- self.senderCollection.withdraw(withdrawID: withdrawID, type: type)
+        let nft <- self.senderCollection.withdraw(withdrawID: withdrawID)
 
         // Destroy the nft
         destroy nft

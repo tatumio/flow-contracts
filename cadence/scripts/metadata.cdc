@@ -6,7 +6,7 @@ pub fun main(account: Address, id: UInt64, type: String): String {
         .borrow<&{TatumMultiNFT.TatumMultiNftCollectionPublic}>()
         ?? panic("Could not borrow capability from public collection")
 
-    let ref = collectionRef.borrowNFT(id: id, type: type)
+    let ref = collectionRef.borrowTatumNFT(id: id, type: type)
     if ref != nil {
       return ref.metadata
     } else {
