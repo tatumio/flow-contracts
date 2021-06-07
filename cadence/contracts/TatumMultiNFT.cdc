@@ -9,11 +9,11 @@ pub contract TatumMultiNFT:NonFungibleToken {
     pub event MinterAdded(address: Address, type: String)
 
     pub var totalSupply: UInt64
-    access(self) var minters: {Address: Int}
 
     pub let CollectionStoragePath: StoragePath
     pub let CollectionPublicPath: PublicPath
     pub let MinterStoragePath: StoragePath
+    pub let AdminMinterStoragePath: StoragePath
 
     pub resource NFT: NonFungibleToken.INFT {
         pub let id: UInt64
@@ -122,6 +122,25 @@ pub contract TatumMultiNFT:NonFungibleToken {
         return <- create Collection()
     }
 
+    pub resource AdminMinter {
+
+        access(self) var minters: {Address: Int}
+
+        init() {
+            self.minters = {};
+        }
+
+        pub fun addMinter(minterAccount: AuthAccount, type: String) {
+            if self.minters[minterAccount.address] == 1 {
+                panic("Unable to add minter, already present as a minter for another token type.")
+            }
+            let minter <- create NFTMinter(type: type)
+            emit MinterAdded(address: minterAccount.address, type: type)
+            minterAccount.save(<-minter, to: TatumMultiNFT.MinterStoragePath)
+            self.minters[minterAccount.address] = 1;
+        }
+    }
+
     // Resource that an admin or something similar would own to be
     // able to mint new NFTs
     //
@@ -150,16 +169,6 @@ pub contract TatumMultiNFT:NonFungibleToken {
 
             TatumMultiNFT.totalSupply = TatumMultiNFT.totalSupply + 1 as UInt64
         }
-
-        pub fun addMinter(minterAccount: AuthAccount, type: String) {
-            if TatumMultiNFT.minters[minterAccount.address] == 1 {
-                panic("Unable to add minter, already present as a minter for another token type.")
-            }
-            let minter <- create NFTMinter(type: type)
-            emit MinterAdded(address: minterAccount.address, type: type)
-            minterAccount.save(<-minter, to: TatumMultiNFT.MinterStoragePath)
-            TatumMultiNFT.minters[minterAccount.address] = 1;
-        }
     }
 
     init() {
@@ -167,6 +176,7 @@ pub contract TatumMultiNFT:NonFungibleToken {
         self.CollectionStoragePath = /storage/TatumNFTCollection
         self.CollectionPublicPath = /public/TatumNFTCollection
         self.MinterStoragePath = /storage/TatumNFTMinter
+        self.AdminMinterStoragePath = /storage/TatumNFTAdminMinter
 
         // Create a Collection resource and save it to storage
         let collection <- create Collection()
@@ -179,10 +189,9 @@ pub contract TatumMultiNFT:NonFungibleToken {
         )
 
         // Create a default admin Minter resource and save it to storage
-        // Admin minter cannot mint new tokens, it can only add new minters with new token types
-        let minter <- create NFTMinter(type: "")
-        self.account.save(<-minter, to: self.MinterStoragePath)
-        self.minters = {self.account.address: 1}
+        // Admin minter cannot mint new tokens, it can only add new minters with for new token types
+        let minter <- create AdminMinter()
+        self.account.save(<-minter, to: self.AdminMinterStoragePath)
 
         emit ContractInitialized()
     }
