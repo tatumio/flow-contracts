@@ -29,7 +29,7 @@
 			]
 		},
 		"minter2": {
-			"address": "790d994fca93ecb7",
+			"address": "87fe4ebd0cddde06",
 			"keys": [
 				{
 					"type": "hex",
@@ -37,7 +37,7 @@
 					"signatureAlgorithm": "ECDSA_secp256k1",
 					"hashAlgorithm": "SHA3_256",
 					"context": {
-						"privateKey": "358d3d89f9725ad8e0d047a71b96991becdcbd84a49964c0e96d22895b77b536"
+						"privateKey": "c4b1bf3d83827cc75d772fc06546271223875171936f3ebd07502f39ce208e8c"
 					}
 				}
 			]
