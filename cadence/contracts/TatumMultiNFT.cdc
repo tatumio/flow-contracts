@@ -105,7 +105,7 @@ pub contract TatumMultiNFT:NonFungibleToken {
         // so that the caller can read its metadata and call its methods
         pub fun borrowTatumNFT(id: UInt64, type: String): &TatumMultiNFT.NFT {
             let x = self.types[type] ?? panic("No such token type.")
-            let token = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?) as! &TatumMultiNFT.NFT
+            let token = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)! as! &TatumMultiNFT.NFT
             if token.type != type {
                 panic("Token doesnt have correct type.")
             }
