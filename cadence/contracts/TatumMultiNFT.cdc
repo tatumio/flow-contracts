@@ -1,4 +1,4 @@
-import NonFungibleToken from 0x631e88ae7f1d7c20
+import NonFungibleToken from 0x1d7e57aa55817448
 
 pub contract TatumMultiNFT:NonFungibleToken {
 
@@ -33,7 +33,6 @@ pub contract TatumMultiNFT:NonFungibleToken {
         pub fun getIDs(): [UInt64]
         pub fun getIDsByType(type: String): [UInt64]
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT
-        pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT
         pub fun borrowTatumNFT(id: UInt64, type: String): &TatumMultiNFT.NFT
     }
 
